@@ -118,7 +118,7 @@ def change_openedx_site(site_name):
         sys.exit(ExitCode.UNKNOWN_PLATFORM)
 
     BASE_URL = OPENEDX_SITES[site_name]['url']
-    EDX_HOMEPAGE = BASE_URL + '/user_api/v1/account/login_session'
+    EDX_HOMEPAGE = BASE_URL + '/user_api/v1/account/login_session/'
     LOGIN_API = BASE_URL + '/login_ajax'
     DASHBOARD = BASE_URL + '/dashboard'
     COURSEWARE_SEL = OPENEDX_SITES[site_name]['courseware-selector']
@@ -164,7 +164,13 @@ def _get_initial_token(url):
     cookiejar = CookieJar()
     opener = build_opener(HTTPCookieProcessor(cookiejar))
     install_opener(opener)
-    opener.open(url)
+    from urllib.error import HTTPError
+    try:
+        logging.info(">> Requesting url: " + url)
+        opener.open(url)
+    except HTTPError as e:
+        logging.error(">> HTTPError: " + e)
+        raise e
 
     for cookie in cookiejar:
         if cookie.name == 'csrftoken':
